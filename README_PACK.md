@@ -19,10 +19,10 @@ npm run build:mac
 
 #### Windows
 ```
-npm run build:mac
+npm run build:win
 ```
 
 #### Linux
 ```
-npm run build:mac
+npm run build:linux
 ```

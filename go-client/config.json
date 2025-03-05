@@ -10,7 +10,7 @@
           "telnet"
         ],
         "comment": {
-          "zh": "PuTTY是一个Telnet、SSH、rlogin、纯TCP以及串行接口连接软件。",
+          "zh": "PuTTY是一个Telnet、SSH、rlogin、纯TCP以及串行接口连接软件。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "PuTTY is a Telnet, SSH, rlogin, pure TCP and serial interface connection software."
         },
         "download_url": "",
@@ -30,7 +30,7 @@
           "telnet"
         ],
         "comment": {
-          "zh": "XShell是一个强大的安全终端模拟软件，它支持SSH、TELNET协议。",
+          "zh": "XShell是一个强大的安全终端模拟软件，它支持SSH、TELNET协议。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "XShell is a powerful secure terminal simulation software that supports SSH and TELNET protocols."
         },
         "download_url": "https://www.xshell.com/zh/xshell-download/",
@@ -50,7 +50,7 @@
           "telnet"
         ],
         "comment": {
-          "zh": "SecureCRT是VanDyke Software所开发销售的一个SSH、Telnet客户端和虚拟终端软件。",
+          "zh": "SecureCRT是VanDyke Software所开发销售的一个SSH、Telnet客户端和虚拟终端软件。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "SecureCRT is an SSH, Telnet client and virtual terminal software developed and sold by VanDyke Software."
         },
         "download_url": "https://www.vandyke.com/cgi-bin/releases.php?product=securecrt",
@@ -70,10 +70,10 @@
           "telnet"
         ],
         "comment": {
-          "zh": "MobaXterm是一款功能丰富的远程计算机管理工具，其包括了SSH客户端、FTP客户端、远程桌面等。",
+          "zh": "MobaXterm是一款功能丰富的远程计算机管理工具，其包括了SSH客户端、FTP客户端、远程桌面等。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "MobaXterm is a feature-rich remote computer management tool, including SSH client, FTP client, remote desktop, etc."
         },
-        "download_url": "https://mobaxterm.mobatek.net/download-home-edition.html",
+        "download_url": "https://blj3.seu.edu.cn/core/download/",
         "type": "linux",
         "path": "",
         "arg_format": "-newtab*sshpass -p{value} ssh -o StrictHostKeyChecking=no {username}@{host} -p{port}",
@@ -91,7 +91,7 @@
           "rdp"
         ],
         "comment": {
-          "zh": "Microsoft Remote Desktop是一款强大的微软远程连接工具，可以从几乎任何地方连接到远程PC和您的工作资源。",
+          "zh": "Microsoft Remote Desktop是一款强大的微软远程连接工具，可以从几乎任何地方连接到远程PC和您的工作资源。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "Microsoft Remote Desktop is a powerful Microsoft remote connection tool that can connect to remote PCs and your work resources from almost anywhere."
         },
         "download_url": "",
@@ -112,7 +112,7 @@
           "sftp"
         ],
         "comment": {
-          "zh": "WinSCP是一个Windows环境下使用SSH的开源图形化SFTP客户端，同时支持SCP协议。",
+          "zh": "WinSCP是一个Windows环境下使用SSH的开源图形化SFTP客户端，同时支持SCP协议。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "WinSCP is an open source graphical SFTP client that uses SSH in a Windows environment and supports the SCP protocol."
         },
         "download_url": "https://winscp.net/eng/index.php",
@@ -131,7 +131,7 @@
           "sftp"
         ],
         "comment": {
-          "zh": "SecureFX 是一款安全的文件传输应用， 拥有一个简单易学的可视化界面。",
+          "zh": "SecureFX 是一款安全的文件传输应用， 拥有一个简单易学的可视化界面。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "SecureFX is a secure file transfer application with an easy-to-learn visual interface."
         },
         "download_url": "https://www.vandyke.com/cgi-bin/releases.php?product=securefx",
@@ -150,7 +150,7 @@
           "sftp"
         ],
         "comment": {
-          "zh": "Xftp是一个功能强大的SFTP、FTP 文件传输软件。",
+          "zh": "Xftp是一个功能强大的SFTP、FTP 文件传输软件。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "Xftp is a powerful SFTP and FTP file transfer software."
         },
         "download_url": "https://www.xshell.com/zh/xftp-download/",
@@ -171,7 +171,7 @@
           "oracle"
         ],
         "comment": {
-          "zh": "PL/SQL Developer是一个集成开发环境，由Allround Automations公司开发，专门面向Oracle数据库存储的程序单元的开发。",
+          "zh": "PL/SQL Developer是一个集成开发环境，由Allround Automations公司开发，专门面向Oracle数据库存储的程序单元的开发。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "PL/SQL Developer is an integrated development environment developed by Allround Automations, specifically for the development of program units stored in Oracle databases."
         },
         "download_url": "https://www.allroundautomations.com/registered-plsqldev/",
@@ -194,10 +194,10 @@
           "sqlserver"
         ],
         "comment": {
-          "zh": "DBeaver Community是一个通用的数据库管理工具和SQL客户端，支持MySQL、PostgreSQL、Oracle以及其他兼容JDBC的数据库。",
+          "zh": "DBeaver Community是一个通用的数据库管理工具和SQL客户端，支持MySQL、PostgreSQL、Oracle以及其他兼容JDBC的数据库。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "DBeaver Community is a general database management tool and SQL client that supports MySQL, PostgreSQL, Oracle and other JDBC-compatible databases."
         },
-        "download_url": "https://dbeaver.io/download/",
+        "download_url": "https://blj3.seu.edu.cn/core/download/",
         "type": "databases",
         "path": "",
         "arg_format": "-con name={name}|driver={protocol}|user={username}|password={value}|database={dbname}|host={host}|port={port}|save=false|connect=true",
@@ -213,7 +213,7 @@
           "redis"
         ],
         "comment": {
-          "zh": "Redis Desktop Manager 是一款能够跨平台使用的开源 Redis 可视化工具，主要针对 Redis 开发设计。",
+          "zh": "Redis Desktop Manager 是一款能够跨平台使用的开源 Redis 可视化工具，主要针对 Redis 开发设计。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "Redis Desktop Manager is an open source Redis visualization tool that can be used across platforms and is mainly designed for Redis development."
         },
         "download_url": "https://github.com/FuckDoctors/rdm-builder/releases/download/2022.5.1/resp-2022.5.1.exe",
@@ -232,7 +232,7 @@
           "sqlserver"
         ],
         "comment": {
-          "zh": "SQL Server Management Studio (SSMS) 是一种集成环境，用于管理从 SQL Server 到 Azure SQL 数据库的任何 SQL 基础结构。",
+          "zh": "SQL Server Management Studio (SSMS) 是一种集成环境，用于管理从 SQL Server 到 Azure SQL 数据库的任何 SQL 基础结构。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "SQL Server Management Studio (SSMS) is an integrated environment for managing any SQL infrastructure, from SQL Server to Azure SQL Database."
         },
         "download_url": "https://download.microsoft.com/download/9/f/8/9f8197f4-0f71-42a3-8717-b2817c77b820/SSMS-Setup-CHS.exe",
@@ -283,7 +283,7 @@
           "redis"
         ],
         "comment": {
-          "zh": "更快、更好、更稳定的Redis桌面(GUI)管理客户端。",
+          "zh": "更快、更好、更稳定的Redis桌面(GUI)管理客户端。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "A faster, better and more stable redis desktop manager."
         },
         "download_url": "https://github.com/qishibo/AnotherRedisDesktopManager",
@@ -302,7 +302,7 @@
           "oracle"
         ],
         "comment": {
-          "zh": "Toad for Oracle是业界领先的数据库开发和管理工具。",
+          "zh": "Toad for Oracle是业界领先的数据库开发和管理工具。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "Toad for Oracle is an industry-leading database development and management tool."
         },
         "download_url": "https://www.quest.com/products/toad-for-oracle/",
@@ -326,7 +326,7 @@
           "telnet"
         ],
         "comment": {
-          "zh": "Terminal是MacOS操作系统上的虚拟终端应用软件，位于“实用工具”文件夹内。",
+          "zh": "Terminal是MacOS操作系统上的虚拟终端应用软件，位于“实用工具”文件夹内。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "Terminal is a virtual terminal application software on the MacOS operating system, located in the \"Utilities\" folder."
         },
         "download_url": "",
@@ -346,8 +346,8 @@
           "telnet"
         ],
         "comment": {
-          "zh": "iTerm2是MacOS操作系统上的虚拟终端应用软件。\n\n!!!手动下载安装，点击保存启用!!!",
-          "en": "iTerm2 is a virtual terminal application software on the MacOS operating system.\n\n\n!!!Manually download and install, click Save to activate!!!"
+          "zh": "iTerm2是MacOS操作系统上的虚拟终端应用软件。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
+          "en": "iTerm2 is a virtual terminal application software on the MacOS operating system.\n\n!!!Manually download and install, click Save to activate!!!"
         },
         "download_url": "https://iterm2.com/downloads.html",
         "type": "linux",
@@ -366,8 +366,8 @@
           "telnet"
         ],
         "comment": {
-          "zh": "SecureCRT是VanDyke Software所开发销售的一个SSH、Telnet客户端和虚拟终端软件。\n\n!!!手动下载安装，点击保存启用!!!",
-          "en": "SecureCRT is an SSH, Telnet client and virtual terminal software developed and sold by VanDyke Software.\n\n!!!Manually download and install, click Save to activate!!!"
+          "zh": "SecureCRT是VanDyke Software所开发销售的一个SSH、Telnet客户端和虚拟终端软件。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
+          "en": "SecureCRT is an SSH, Telnet client and virtual terminal software developed and sold by VanDyke Software.\n!!!Manually download and install, click Save to activate!!!"
         },
         "download_url": "https://www.vandyke.com/cgi-bin/releases.php?product=securecrt",
         "type": "linux",
@@ -387,8 +387,8 @@
           "rdp"
         ],
         "comment": {
-          "zh": "Microsoft Remote Desktop是一款强大的微软远程连接工具，可以从几乎任何地方连接到远程PC和您的工作资源。\n\n!!!手动下载安装，点击保存启用!!!",
-          "en": "Microsoft Remote Desktop is a powerful Microsoft remote connection tool that can connect to remote PCs and your work resources from almost anywhere.\n\n!!!Manually download and install, click Save to activate!!!"
+          "zh": "Microsoft Remote Desktop是一款强大的微软远程连接工具，可以从几乎任何地方连接到远程PC和您的工作资源。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
+          "en": "Microsoft Remote Desktop is a powerful Microsoft remote connection tool that can connect to remote PCs and your work resources from almost anywhere.\n!!!Manually download and install, click Save to activate!!!"
         },
         "download_url": "",
         "type": "windows",
@@ -409,8 +409,8 @@
           "telnet"
         ],
         "comment": {
-          "zh": "iTerm2是MacOS操作系统上的虚拟终端应用软件。\n\n!!!手动下载安装，点击保存启用!!!",
-          "en": "iTerm2 is a virtual terminal application software on the MacOS operating system.\n\n\n!!!Manually download and install, click Save to activate!!!"
+          "zh": "iTerm2是MacOS操作系统上的虚拟终端应用软件。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
+          "en": "iTerm2 is a virtual terminal application software on the MacOS operating system.\n\n!!!Manually download and install, click Save to activate!!!"
         },
         "download_url": "https://iterm2.com/downloads.html",
         "type": "linux",
@@ -428,8 +428,8 @@
           "sftp"
         ],
         "comment": {
-          "zh": "SecureFX 是一款安全的文件传输应用， 拥有一个简单易学的可视化界面。\n\n!!!手动下载安装，点击保存启用!!!",
-          "en": "SecureFX is a secure file transfer application with an easy-to-learn visual interface.\n\n!!!Manually download and install, click Save to activate!!!"
+          "zh": "SecureFX 是一款安全的文件传输应用， 拥有一个简单易学的可视化界面。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
+          "en": "SecureFX is a secure file transfer application with an easy-to-learn visual interface.\n!!!Manually download and install, click Save to activate!!!"
         },
         "download_url": "https://www.vandyke.com/cgi-bin/releases.php?product=securefx",
         "type": "linux",
@@ -454,7 +454,7 @@
           "sqlserver"
         ],
         "comment": {
-          "zh": "Terminal是MacOS操作系统上的虚拟终端应用软件，位于“实用工具”文件夹内。",
+          "zh": "Terminal是MacOS操作系统上的虚拟终端应用软件，位于“实用工具”文件夹内。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "Terminal is a virtual terminal application software on the MacOS operating system, located in the \"Utilities\" folder."
         },
         "download_url": "",
@@ -484,10 +484,10 @@
           "sqlserver"
         ],
         "comment": {
-          "zh": "DBeaver Community是一个通用的数据库管理工具和SQL客户端，支持MySQL、PostgreSQL、Oracle以及其他兼容JDBC的数据库。\n\n!!!手动下载安装，点击保存启用!!!",
-          "en": "DBeaver Community is a general database management tool and SQL client that supports MySQL, PostgreSQL, Oracle and other JDBC-compatible databases.\n\n!!!Manually download and install, click Save to activate!!!"
+          "zh": "DBeaver Community是一个通用的数据库管理工具和SQL客户端，支持MySQL、PostgreSQL、Oracle以及其他兼容JDBC的数据库。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
+          "en": "DBeaver Community is a general database management tool and SQL client that supports MySQL, PostgreSQL, Oracle and other JDBC-compatible databases.\n!!!Manually download and install, click Save to activate!!!"
         },
-        "download_url": "https://dbeaver.io/download/",
+        "download_url": "https://blj3.seu.edu.cn/core/download/",
         "type": "databases",
         "path": "/Applications/DBeaver.app/Contents/MacOS/dbeaver",
         "arg_format": "-con name={name}|driver={protocol}|user={username}|password={value}|database={dbname}|host={host}|port={port}|save=false|connect=true",
@@ -503,7 +503,7 @@
           "redis"
         ],
         "comment": {
-          "zh": "更快、更好、更稳定的Redis桌面(GUI)管理客户端。",
+          "zh": "更快、更好、更稳定的Redis桌面(GUI)管理客户端。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
           "en": "A faster, better and more stable redis desktop manager."
         },
         "download_url": "https://github.com/qishibo/AnotherRedisDesktopManager",
@@ -623,10 +623,10 @@
           "sqlserver"
         ],
         "comment": {
-          "zh": "DBeaver Community是一个通用的数据库管理工具和SQL客户端，支持MySQL、PostgreSQL、Oracle以及其他兼容JDBC的数据库。\n\n!!!手动下载安装，点击保存启用!!!",
-          "en": "DBeaver Community is a general database management tool and SQL client that supports MySQL, PostgreSQL, Oracle and other JDBC-compatible databases.\n\n!!!Manually download and install, click Save to activate!!!"
+          "zh": "DBeaver Community是一个通用的数据库管理工具和SQL客户端，支持MySQL、PostgreSQL、Oracle以及其他兼容JDBC的数据库。\n!!!最新版本可能不兼容，可下载较低的版本，或者前往堡垒机下载中心下载 https://blj3.seu.edu.cn/core/download/!!!",
+          "en": "DBeaver Community is a general database management tool and SQL client that supports MySQL, PostgreSQL, Oracle and other JDBC-compatible databases.\n!!!Manually download and install, click Save to activate!!!"
         },
-        "download_url": "https://dbeaver.io/download/",
+        "download_url": "https://blj3.seu.edu.cn/core/download/",
         "type": "databases",
         "path": "",
         "arg_format": "-con name={name}|driver={protocol}|user={username}|password={value}|database={dbname}|host={host}|port={port}|save=false|connect=true",
