@@ -128,10 +128,6 @@ jobs:
           - platform: windows-latest
             target: ""
     runs-on: ${{ matrix.platform }}
-    env:
-      APPLE_ID: ${{ secrets.APPLE_ID }}
-      APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
     steps:
       - name: Check out git repository
         uses: actions/checkout@v4
@@ -160,26 +156,14 @@ jobs:
       - name: Setup Apple Certificate
         if: startsWith(matrix.platform, 'macos')
         env:
-          APPLE_CERTIFICATE: ''
-          APPLE_CERTIFICATE_PASSWORD: ''
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
         run: |
-          if [ -z "$APPLE_CERTIFICATE" ]; then
-            echo "APPLE_CERTIFICATE secret not set, skip apple certificate setup"
-            exit 0
-          fi
           npm run setup_apple_cert
       - name: Sign embedded Go client binary (macOS only)
         if: startsWith(matrix.platform, 'macos')
         env:
-          APPLE_SIGNING_IDENTITY: ${{ env.APPLE_SIGNING_IDENTITY }}
-          APPLE_CERTIFICATE: ''
           TARGET_ARCH: ${{ matrix.target == 'aarch64-apple-darwin' && 'arm64' || 'amd64' }}
         run: |
-          if [ -z "$APPLE_CERTIFICATE" ]; then
-            echo "No apple certificate, skip sign go binary"
-            exit 0
-          fi
           pnpm run sign_go_binary
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -248,9 +232,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-          APPLE_CERTIFICATE: ''
-          APPLE_CERTIFICATE_PASSWORD: ''
-          APPLE_SIGNING_IDENTITY: ${{ env.APPLE_SIGNING_IDENTITY }}
           CLIENT_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.product_name || '' }}
           VITE_APP_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.product_name || '' }}
 
