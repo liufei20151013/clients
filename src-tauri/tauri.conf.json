@@ -9,7 +9,7 @@
     "category": "DeveloperTool",
     "shortDescription": "",
     "longDescription": "",
-    "macOS": {"sign": false},
+    "macOS": {},
     "windows": {
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",
