@@ -31,6 +31,7 @@ const imagesMap: Record<string, string | undefined> = {
   securefx: getImageByName("securecrt"),
   filezilla: getImageByName("filezilla"),
   electerm: getImageByName("electerm"),
+  tabby: getImageByName("tabby"),
   securecrt: getImageByName("securecrt"),
   another_redis: getImageByName("another_redis"),
   mongo_compass: getImageByName("mongodb"),

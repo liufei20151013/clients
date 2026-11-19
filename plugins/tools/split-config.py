@@ -31,6 +31,7 @@ ICON_MAP: dict[str, str] = {
     "winscp": "winscp",
     "filezilla": "filezilla",
     "electerm": "electerm",
+    "tabby": "tabby",
     "securefx": "securecrt",
     "xftp": "xftp",
     "plsql": "plsql",

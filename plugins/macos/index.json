@@ -57,6 +57,11 @@
       "category": "filetransfer"
     },
     {
+      "id": "macos.tabby",
+      "name": "tabby",
+      "category": "terminal"
+    },
+    {
       "id": "macos.terminal",
       "name": "terminal",
       "category": "terminal"
