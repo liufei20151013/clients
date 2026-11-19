@@ -1,6 +1,7 @@
 package plugin
 
 import (
+    "go-client/pkg/config"
 	"os"
 	"path/filepath"
 	"testing"
@@ -133,5 +134,69 @@ func TestLoadAppConfigDoesNotFallbackMatchFirst(t *testing.T) {
 		if item.Name == "terminal" && item.IsMatchProtocol("telnet") {
 			t.Fatalf("expected no telnet fallback from connect.json match_first, got %#v", item)
 		}
+	}
+}
+
+func TestLoadAppConfigMacFileZillaSftp(t *testing.T) {
+	if osKey() != "macos" {
+		t.Skip("macOS-specific plugin")
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	repoRoot := filepath.Clean(filepath.Join(wd, "..", "..", ".."))
+	if err := os.Chdir(repoRoot); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_ = os.Chdir(wd)
+	})
+
+	configDir := t.TempDir()
+	configJSON := `{"_plugins":{"enabled":true}}`
+	state := `{
+  "version": 1,
+  "selections": {
+    "filetransfer:sftp": "macos.filezilla"
+  },
+  "plugins": {}
+}`
+
+	if err := os.WriteFile(filepath.Join(configDir, "config.json"), []byte(configJSON), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(configDir, "plugins-state.json"), []byte(state), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, ok := LoadAppConfig(configDir)
+	if !ok {
+		t.Fatal("expected plugin config to load")
+	}
+
+	var filezilla *config.AppItem
+	for i := range cfg.MacOS.FileTransfer {
+		item := cfg.MacOS.FileTransfer[i]
+		if item.Name == "filezilla" {
+			filezilla = &cfg.MacOS.FileTransfer[i]
+			if !item.IsActive() || !item.IsMatchProtocol("sftp") {
+				t.Fatalf("filezilla should be active and matched for sftp: %#v", item)
+			}
+		}
+	}
+	if filezilla == nil {
+		t.Fatal("filezilla plugin not found in macOS filetransfer list")
+	}
+
+	wantPath := filepath.FromSlash("/Applications/FileZilla.app/Contents/MacOS/filezilla")
+	if filezilla.Path != wantPath {
+		t.Fatalf("unexpected filezilla path: %q", filezilla.Path)
+	}
+
+	wantArgFormat := "{protocol}://{username}:{value}@{host}:{port}"
+	if filezilla.ArgFormat != wantArgFormat {
+		t.Fatalf("unexpected filezilla arg_format: %q", filezilla.ArgFormat)
 	}
 }
