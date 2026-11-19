@@ -30,6 +30,7 @@ const imagesMap: Record<string, string | undefined> = {
   tigervnc: getImageByName("tigerVnc"),
   securefx: getImageByName("securecrt"),
   filezilla: getImageByName("filezilla"),
+  electerm: getImageByName("electerm"),
   securecrt: getImageByName("securecrt"),
   another_redis: getImageByName("another_redis"),
   mongo_compass: getImageByName("mongodb"),
