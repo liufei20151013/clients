@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func getCommandFromArgs(connectInfo map[string]string, argFormat string) string {
@@ -62,67 +61,6 @@ func validateAppPath(appPath string) error {
 		return fmt.Errorf("application path does not exist: %s", appPath)
 	}
 	return nil
-}
-
-// keychainTrustTargets 把可执行文件路径换算成需要授予钥匙串访问权限的代码对象。
-// 传 /Applications/Tabby.app/Contents/MacOS/Tabby 时，同时信任 .app 包本身：
-// 钥匙串的访问控制是按代码签名比对的，两种路径落到同一个签名上，多写一条更稳。
-func keychainTrustTargets(appPath string) []string {
-	targets := make([]string, 0, 2)
-	if idx := strings.Index(appPath, ".app/"); idx > 0 {
-		targets = append(targets, appPath[:idx+len(".app")])
-	}
-	targets = append(targets, appPath)
-	existed := targets[:0]
-	for _, target := range targets {
-		if _, err := os.Stat(target); err == nil {
-			existed = append(existed, target)
-		}
-	}
-	return existed
-}
-
-// seedKeychainPassword 按插件声明的 password_store，把本次连接的密码预置到 macOS 钥匙串。
-// 基于 keytar 的客户端（Tabby 等）启动时会用 service/account 去读密码，
-// 命中后直接走“已保存密码”认证，从而避免再弹一次密码框。
-// 返回的 cleanup 会在客户端退出后删掉这条临时凭据，防止每个连接都往钥匙串里留一条。
-// 失败不阻断启动：客户端仍会自己弹框，用户手工输一次即可。
-func seedKeychainPassword(appItem *config.AppItem, connectInfo map[string]string, password string) (func(), error) {
-	store := appItem.PasswordStore
-	if store == nil || store.Type != "macos-keychain" {
-		return nil, nil
-	}
-	service := strings.TrimSpace(getCommandFromArgs(connectInfo, store.Service))
-	account := strings.TrimSpace(getCommandFromArgs(connectInfo, store.Account))
-	if service == "" || account == "" {
-		return nil, fmt.Errorf("password_store template is incomplete (service=%q, account=%q)", service, account)
-	}
-	if password == "" {
-		return nil, fmt.Errorf("password is empty, skip keychain seeding")
-	}
-
-	// -U 覆盖已存在条目，避免上一轮残留的旧密码把新连接顶掉。
-	// 密码只能走 argv：security 的 -w 省略取值时会从 /dev/tty 交互读取，
-	// 客户端是后台拉起的、没有终端，只会卡住。
-	args := []string{"add-generic-password", "-U", "-s", service, "-a", account}
-	for _, target := range keychainTrustTargets(appItem.Path) {
-		args = append(args, "-T", target)
-	}
-	args = append(args, "-w", password)
-
-	out, err := exec.Command("/usr/bin/security", args...).CombinedOutput()
-	if err != nil {
-		return nil, fmt.Errorf("security add-generic-password failed (service=%q, account=%q): %v: %s",
-			service, account, err, strings.TrimSpace(string(out)))
-	}
-
-	cleanup := func() {
-		// 稍等一下再删：刚启动的客户端可能还没把密码读走。
-		// 认证失败时客户端自己也会删，这里删不到只会返回非 0，忽略即可。
-		time.Sleep(8 * time.Second)
-		_ = exec.Command("/usr/bin/security", "delete-generic-password", "-s", service, "-a", account).Run()
-	}
-	return cleanup, nil
 }
 
 func awakenRDPCommand(filePath string, cfg *config.AppConfig) (*exec.Cmd, error) {
@@ -229,22 +167,16 @@ func awakenSSHCommand(r *Rouse, cfg *config.AppConfig) (*exec.Cmd, error) {
 			}
 		}
 		var err error
-		cmd, err = externalAppCommand(r.Protocol, appPath, appItem.ArgFormat, connectMap)
+		if appItem.Bridge != nil {
+			// 命令桥接：让终端开一个 profile 跑桥接脚本，脚本里 exec 内置 client，
+			// 认证交给 client，不经过终端自身的凭据存储，也就不会弹电脑密码。
+			cmd, err = bridgeCommand(appItem, connectMap)
+		} else {
+			cmd, err = externalAppCommand(r.Protocol, appPath, appItem.ArgFormat, connectMap)
+		}
 		if err != nil {
 			return nil, err
 		}
-		// 第三方客户端命令行不支持传密码，按插件声明把密码预置进钥匙串，
-		// 客户端启动后自己取用，用户就不用再手工输一次。
-		cleanup, seedErr := seedKeychainPassword(appItem, connectMap, r.Value)
-		if seedErr != nil {
-			if global.LOG != nil {
-				global.LOG.Warn("seed keychain password failed",
-					zap.String("app", appItem.Name),
-					zap.Error(seedErr),
-				)
-			}
-		}
-		registerCleanup(cleanup)
 	}
 	return cmd, nil
 }

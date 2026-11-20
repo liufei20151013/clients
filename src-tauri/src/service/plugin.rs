@@ -415,7 +415,15 @@ impl PluginService {
             .unwrap_or(plugin_id);
 
         let launch = platform_connect.get("launch").unwrap_or(&Value::Null);
-        let (arg_format, autoit) = Self::launch_to_arg_format(launch);
+        let (mut arg_format, autoit) = Self::launch_to_arg_format(launch);
+        // 命令桥接的 profile 名只在 connect.json 里写一次，展示用的 arg_format 里替换掉占位符。
+        if let Some(profile_name) = platform_connect
+            .get("bridge")
+            .and_then(|b| b.get("profile_name"))
+            .and_then(|v| v.as_str())
+        {
+            arg_format = arg_format.replace("{bridge_profile}", profile_name);
+        }
 
         let (path, mut is_set, is_internal) =
             Self::resolve_path(plugin_id, &platform_connect, user_state);
@@ -457,12 +465,12 @@ impl PluginService {
                 .insert("autoit".to_string(), steps);
         }
 
-        // password_store 原样透传：客户端拉起的 go-client 会按它把密码预置到
-        // 目标应用自己的凭据存储（macOS 钥匙串），实现不弹框的密码代填。
-        if let Some(store) = platform_connect.get("password_store") {
+        // bridge 原样透传：go-client 拉起客户端时会按它把本次连接写成一个桥接脚本，
+        // 让终端跑固定的本地 profile 去 exec 内置 client，从而免框、免系统凭据地自动登录。
+        if let Some(bridge) = platform_connect.get("bridge") {
             item.as_object_mut()
                 .unwrap()
-                .insert("password_store".to_string(), store.clone());
+                .insert("bridge".to_string(), bridge.clone());
         }
 
         Ok(Some(item))

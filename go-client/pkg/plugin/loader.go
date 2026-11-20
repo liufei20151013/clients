@@ -48,14 +48,14 @@ type manifest struct {
 }
 
 type platformConnect struct {
-	DisplayName   string                 `json:"display_name"`
-	Executable    executableConfig       `json:"executable"`
-	Launch        map[string]interface{} `json:"launch"`
-	MatchFirst    []string               `json:"match_first"`
-	IsDefault     bool                   `json:"is_default"`
-	IsSet         bool                   `json:"is_set"`
-	IsInternal    bool                   `json:"is_internal"`
-	PasswordStore *config.PasswordStore  `json:"password_store"`
+	DisplayName string                 `json:"display_name"`
+	Executable  executableConfig       `json:"executable"`
+	Launch      map[string]interface{} `json:"launch"`
+	MatchFirst  []string               `json:"match_first"`
+	IsDefault   bool                   `json:"is_default"`
+	IsSet       bool                   `json:"is_set"`
+	IsInternal  bool                   `json:"is_internal"`
+	Bridge      *config.CommandBridge  `json:"bridge"`
 }
 
 type executableConfig struct {
@@ -364,6 +364,10 @@ func LoadAppConfig(configDir string) (*config.AppConfig, bool) {
 		}
 
 		argFormat, autoit := launchToArgFormat(platformConnect.Launch)
+		// 命令桥接的 profile 名只在 connect.json 里写一次，展示用的 arg_format 里替换掉占位符。
+		if platformConnect.Bridge != nil && platformConnect.Bridge.ProfileName != "" {
+			argFormat = strings.ReplaceAll(argFormat, "{bridge_profile}", platformConnect.Bridge.ProfileName)
+		}
 		matchFirst := buildMatchFirst(entry.ID, manifest.Category, manifest.Protocols, state.Selections)
 		path, isSet, isInternal := resolvePath(entry.ID, platformConnect, state)
 		if len(matchFirst) > 0 {
@@ -371,18 +375,18 @@ func LoadAppConfig(configDir string) (*config.AppConfig, bool) {
 		}
 
 		item := config.AppItem{
-			Name:          manifest.Name,
-			DisplayName:   displayName,
-			Protocol:      manifest.Protocols,
-			Type:          manifest.Category,
-			MatchFirst:    matchFirst,
-			Path:          path,
-			ArgFormat:     argFormat,
-			AutoIt:        autoit,
-			IsInternal:    isInternal,
-			IsDefault:     platformConnect.IsDefault,
-			IsSet:         isSet,
-			PasswordStore: platformConnect.PasswordStore,
+			Name:        manifest.Name,
+			DisplayName: displayName,
+			Protocol:    manifest.Protocols,
+			Type:        manifest.Category,
+			MatchFirst:  matchFirst,
+			Path:        path,
+			ArgFormat:   argFormat,
+			AutoIt:      autoit,
+			IsInternal:  isInternal,
+			IsDefault:   platformConnect.IsDefault,
+			IsSet:       isSet,
+			Bridge:      platformConnect.Bridge,
 		}
 
 		if list, ok := categoryItems[manifest.Category]; ok {

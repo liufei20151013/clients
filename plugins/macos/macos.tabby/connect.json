@@ -11,12 +11,17 @@
   },
   "launch": {
     "type": "args",
-    "template": "quickConnect ssh {username}@{host}:{port}"
+    "template": "profile {bridge_profile}"
   },
-  "password_store": {
-    "type": "macos-keychain",
-    "service": "ssh@{host}:{port}",
-    "account": "{username}"
+  "bridge": {
+    "type": "local-profile",
+    "profile_name": "JumpServer",
+    "profile_id": "jumpserver-client",
+    "script_name": "tabby-bridge.sh",
+    "args_template": "{protocol} {username}@{host} -p {port} -P {value}",
+    "config_path": "~/Library/Application Support/tabby/config.yaml",
+    "shell": "/bin/sh",
+    "run_fallback": true
   },
   "display_name": "Tabby"
 }
