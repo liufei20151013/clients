@@ -11,7 +11,7 @@
   },
   "launch": {
     "type": "args",
-    "template": "-l {username} -P {port} -pw {value} -t {name} -so {host}"
+    "template": "-l {username} -P {port} -pw {value} -t {name} -so -opts {\"startDirectoryRemote\":\"/\"} {host}"
   },
   "display_name": "Electerm"
 }

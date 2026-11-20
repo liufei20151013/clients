@@ -13,7 +13,7 @@
   ],
   "builtin": true,
   "comment": {
-    "zh": "Electerm 是一款开源跨平台的终端 / SFTP 客户端，支持 SSH、SFTP 文件传输。\n\n!!!手动下载安装，点击保存启用!!!",
-    "en": "Electerm is an open-source cross-platform terminal/SFTP client supporting SSH and SFTP file transfer.\n\n!!!Manually download and install, click Save to activate!!!"
+    "zh": "Electerm 是一款开源跨平台的终端 / SFTP 客户端，支持 SSH、SFTP 文件传输。\n\n。Electerm 需安装v5.11.8以上。\n\n!!!手动下载安装，点击保存启用!!!",
+    "en": "Electerm is an open-source cross-platform terminal/SFTP client supporting SSH and SFTP file transfer.\n\nElecterm requires version 5.11.8 or higher.\n\n!!!Manually download and install, click Save to activate!!!"
   }
 }
