@@ -80,7 +80,10 @@ Copy-Item -Recurse plugins\demo\hello-terminal `
 **注意**：
 
 - `id` 安装后不可修改，升级插件应提高 `version` 并保持 `id` 不变
-- `category` 必须与实际用途一致，决定在哪个设置子页面出现
+- `category` 必须与实际用途一致，决定在哪个设置子页面出现；也可以写成数组让一个应用同时服务多个分类
+  （如 `["terminal", "filetransfer"]`，Electerm 即如此），此时 **connect.json 必须在 `launch_by_category`
+  里把每个分类各写一份 `launch`**：同一应用在不同分类下参数几乎必然不同，少写一个分类，
+  该分类就不会被注册（设置页里不出现，并记 error 日志），不会回退用 `launch` 兜底
 - `protocols` 中的协议必须在 JumpServer 中已支持
 
 ---

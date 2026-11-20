@@ -2,11 +2,14 @@ package plugin
 
 import (
 	"encoding/json"
+	"go-client/global"
 	"go-client/pkg/config"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"go.uber.org/zap"
 )
 
 const (
@@ -21,9 +24,31 @@ type indexFile struct {
 }
 
 type indexEntry struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	Category string `json:"category"`
+	ID       string     `json:"id"`
+	Name     string     `json:"name"`
+	Category stringList `json:"category"`
+}
+
+// stringList 兼容 "category": "terminal" 与 "category": ["terminal","filetransfer"] 两种写法。
+// 一个插件可以同时属于多个分类（例如 electerm 既当 SSH 终端又当 SFTP 客户端）。
+type stringList []string
+
+func (s *stringList) UnmarshalJSON(data []byte) error {
+	var single string
+	if err := json.Unmarshal(data, &single); err == nil {
+		if single == "" {
+			*s = nil
+		} else {
+			*s = stringList{single}
+		}
+		return nil
+	}
+	var many []string
+	if err := json.Unmarshal(data, &many); err != nil {
+		return err
+	}
+	*s = many
+	return nil
 }
 
 type pluginState struct {
@@ -41,21 +66,38 @@ type manifest struct {
 	ID          string            `json:"id"`
 	Name        string            `json:"name"`
 	DisplayName string            `json:"display_name"`
-	Category    string            `json:"category"`
+	Category    stringList        `json:"category"`
 	Protocols   []string          `json:"protocols"`
 	DownloadURL string            `json:"download_url"`
 	Comment     map[string]string `json:"comment"`
 }
 
 type platformConnect struct {
-	DisplayName string                 `json:"display_name"`
-	Executable  executableConfig       `json:"executable"`
-	Launch      map[string]interface{} `json:"launch"`
-	MatchFirst  []string               `json:"match_first"`
-	IsDefault   bool                   `json:"is_default"`
-	IsSet       bool                   `json:"is_set"`
-	IsInternal  bool                   `json:"is_internal"`
-	Bridge      *config.CommandBridge  `json:"bridge"`
+	DisplayName      string                            `json:"display_name"`
+	Executable       executableConfig                  `json:"executable"`
+	Launch           map[string]interface{}            `json:"launch"`
+	LaunchByCategory map[string]map[string]interface{} `json:"launch_by_category"`
+	MatchFirst       []string                          `json:"match_first"`
+	IsDefault        bool                              `json:"is_default"`
+	IsSet            bool                              `json:"is_set"`
+	IsInternal       bool                              `json:"is_internal"`
+	Bridge           *config.CommandBridge             `json:"bridge"`
+}
+
+// launchForCategory 返回某个分类该用的启动定义。
+//
+// 单分类插件直接用 launch。多分类插件**必须**为每个分类在 launch_by_category 里
+// 各写一份：同一款应用当终端和当文件传输工具时参数几乎必然不同（例如 electerm 的 -so
+// 只在 SFTP 下合法），拿 launch 兜底等于这个分类必然连错，所以不兜底，直接判为配置错误。
+func (c platformConnect) launchForCategory(category string, categories []string) (map[string]interface{}, bool) {
+	if len(categories) > 1 {
+		launch, ok := c.LaunchByCategory[category]
+		if !ok || len(launch) == 0 {
+			return nil, false
+		}
+		return launch, true
+	}
+	return c.Launch, len(c.Launch) > 0
 }
 
 type executableConfig struct {
@@ -363,34 +405,52 @@ func LoadAppConfig(configDir string) (*config.AppConfig, bool) {
 			displayName = manifest.DisplayName
 		}
 
-		argFormat, autoit := launchToArgFormat(platformConnect.Launch)
-		// 命令桥接的 profile 名只在 connect.json 里写一次，展示用的 arg_format 里替换掉占位符。
-		if platformConnect.Bridge != nil && platformConnect.Bridge.ProfileName != "" {
-			argFormat = strings.ReplaceAll(argFormat, "{bridge_profile}", platformConnect.Bridge.ProfileName)
-		}
-		matchFirst := buildMatchFirst(entry.ID, manifest.Category, manifest.Protocols, state.Selections)
-		path, isSet, isInternal := resolvePath(entry.ID, platformConnect, state)
-		if len(matchFirst) > 0 {
-			isSet = true
-		}
+		// 一个插件可以声明多个分类：每个分类生成一个 item，各自按自己的
+		// selections 算 match_first，也各自用 launch_by_category 里的启动参数。
+		// 多分类时该覆盖是必需的，缺了就说明打包者没想清楚这个分类该怎么启动，
+		// 宁可让这个分类不注册（设置页里看不到它），也不要用另一套参数蒙过去。
+		for _, category := range manifest.Category {
+			categoryName := string(category)
+			list, ok := categoryItems[categoryName]
+			if !ok {
+				continue
+			}
 
-		item := config.AppItem{
-			Name:        manifest.Name,
-			DisplayName: displayName,
-			Protocol:    manifest.Protocols,
-			Type:        manifest.Category,
-			MatchFirst:  matchFirst,
-			Path:        path,
-			ArgFormat:   argFormat,
-			AutoIt:      autoit,
-			IsInternal:  isInternal,
-			IsDefault:   platformConnect.IsDefault,
-			IsSet:       isSet,
-			Bridge:      platformConnect.Bridge,
-		}
+			launch, ok := platformConnect.launchForCategory(categoryName, manifest.Category)
+			if !ok {
+				if global.LOG != nil {
+					global.LOG.Error("multi-category plugin is missing launch_by_category for this category, not registering it",
+						zap.String("plugin", entry.ID),
+						zap.String("category", categoryName))
+				}
+				continue
+			}
 
-		if list, ok := categoryItems[manifest.Category]; ok {
-			*list = append(*list, item)
+			argFormat, autoit := launchToArgFormat(launch)
+			// 命令桥接的 profile 名只在 connect.json 里写一次，展示用的 arg_format 里替换掉占位符。
+			if platformConnect.Bridge != nil && platformConnect.Bridge.ProfileName != "" {
+				argFormat = strings.ReplaceAll(argFormat, "{bridge_profile}", platformConnect.Bridge.ProfileName)
+			}
+			matchFirst := buildMatchFirst(entry.ID, categoryName, manifest.Protocols, state.Selections)
+			path, isSet, isInternal := resolvePath(entry.ID, platformConnect, state)
+			if len(matchFirst) > 0 {
+				isSet = true
+			}
+
+			*list = append(*list, config.AppItem{
+				Name:        manifest.Name,
+				DisplayName: displayName,
+				Protocol:    manifest.Protocols,
+				Type:        categoryName,
+				MatchFirst:  matchFirst,
+				Path:        path,
+				ArgFormat:   argFormat,
+				AutoIt:      autoit,
+				IsInternal:  isInternal,
+				IsDefault:   platformConnect.IsDefault,
+				IsSet:       isSet,
+				Bridge:      platformConnect.Bridge,
+			})
 		}
 	}
 

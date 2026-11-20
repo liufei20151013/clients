@@ -33,6 +33,15 @@
     },
     "executable": { "$ref": "#/$defs/executable" },
     "launch": { "$ref": "#/$defs/launch" },
+    "launch_by_category": {
+      "type": "object",
+      "propertyNames": {
+        "enum": ["terminal", "remotedesktop", "filetransfer", "databases"]
+      },
+      "additionalProperties": { "$ref": "#/$defs/launch" },
+      "description": "REQUIRED when manifest.category declares more than one category: every declared category must have its own launch definition here. The same app almost always needs different argv per role (e.g. an SFTP-only flag must not be passed when the plugin is used as an SSH terminal), so a category missing here is a packaging error: that category is not registered at all and an error is logged. It never falls back to launch. Single-category plugins ignore this field"
+    },
+    "bridge": { "$ref": "#/$defs/bridge" },
     "env": {
       "type": "object",
       "additionalProperties": { "type": "string" },
@@ -146,6 +155,50 @@
         { "$ref": "#/$defs/launchFile" },
         { "$ref": "#/$defs/launchAutoIt" }
       ]
+    },
+    "bridge": {
+      "type": "object",
+      "required": ["profile_name", "profile_id", "script_name", "args_template", "config_path"],
+      "additionalProperties": false,
+      "description": "Command bridge: the client writes a script that execs the bundled client with the credential, and installs one fixed local profile in the terminal's own config pointing at it, so the terminal opens that profile instead of asking the OS keychain for a password",
+      "properties": {
+        "type": { "const": "local-profile" },
+        "profile_name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name of the fixed profile, matched by the terminal's `profile <name>` CLI"
+        },
+        "profile_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Profile id written into the terminal config, used to detect an existing install"
+        },
+        "script_name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Bridge script file name, stored under the client's own config directory"
+        },
+        "args_template": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Arguments for the bundled client only (program name is always the bundled client); same placeholders as launch.template"
+        },
+        "config_path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path of the terminal's own config file, ~ allowed"
+        },
+        "shell": {
+          "type": "string",
+          "default": "/bin/sh",
+          "description": "Interpreter for the bridge script"
+        },
+        "run_fallback": {
+          "type": "boolean",
+          "default": false,
+          "description": "Fall back to `<terminal> run <script>` when the terminal has not loaded the profile yet (shows a one-off confirmation dialog)"
+        }
+      }
     }
   }
 }

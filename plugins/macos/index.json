@@ -24,7 +24,10 @@
     {
       "id": "macos.electerm",
       "name": "electerm",
-      "category": "filetransfer"
+      "category": [
+        "terminal",
+        "filetransfer"
+      ]
     },
     {
       "id": "macos.iterm",

@@ -13,5 +13,15 @@
     "type": "args",
     "template": "-l {username} -P {port} -pw {value} -t {name} -so -opts {\"startDirectoryRemote\":\"/\"} {host}"
   },
+  "launch_by_category": {
+    "terminal": {
+      "type": "args",
+      "template": "-l {username} -P {port} -pw {value} -t {name} {host}"
+    },
+    "filetransfer": {
+      "type": "args",
+      "template": "-l {username} -P {port} -pw {value} -t {name} -so -opts {\"startDirectoryRemote\":\"/\"} {host}"
+    }
+  },
   "display_name": "Electerm"
 }

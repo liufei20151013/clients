@@ -336,6 +336,50 @@ impl PluginService {
             .unwrap_or("")
     }
 
+    /// category 允许写成 "terminal" 或 ["terminal","filetransfer"]：
+    /// 一个插件可以同时服务多个分类（例如 electerm 既当 SSH 终端又当 SFTP 客户端）。
+    fn category_list(entry: &Value) -> Vec<String> {
+        match entry.get("category") {
+            Some(Value::String(s)) => {
+                if s.is_empty() {
+                    Vec::new()
+                } else {
+                    vec![s.clone()]
+                }
+            }
+            Some(Value::Array(items)) => items
+                .iter()
+                .filter_map(|v| v.as_str())
+                .filter(|s| !s.is_empty())
+                .map(|s| s.to_string())
+                .collect(),
+            _ => Vec::new(),
+        }
+    }
+
+    /// 取某个分类该用的启动定义。
+    ///
+    /// 单分类插件直接用 `launch`。多分类插件**必须**在 `launch_by_category` 里为每个分类
+    /// 各写一份：同一款应用当终端和当文件传输工具时参数几乎必然不同（例如 Electerm 的
+    /// `-so` 只在 SFTP 下合法），拿 `launch` 兜底等于这个分类必然连错，
+    /// 因此缺覆盖时返回 None，由调用方放弃该分类，而不是用另一套参数蒙过去。
+    fn launch_for_category<'a>(
+        platform_connect: &'a Value,
+        category: &str,
+        multi_category: bool,
+    ) -> Option<&'a Value> {
+        if multi_category {
+            platform_connect
+                .get("launch_by_category")
+                .and_then(|m| m.get(category))
+                .filter(|v| v.is_object())
+        } else {
+            platform_connect
+                .get("launch")
+                .filter(|v| v.is_object())
+        }
+    }
+
     fn user_path_exists(platform_connect: &Value, path: &str) -> bool {
         if Self::executable_type(platform_connect) != "user_path" {
             return true;
@@ -384,24 +428,26 @@ impl PluginService {
         matched
     }
 
-    fn plugin_to_app_item(
+    /// 把一个插件翻译成若干 app item：manifest 里声明了几个分类就产出几个，
+    /// 每个分类的 item 各自带自己的启动参数与 match_first。
+    fn plugin_to_app_items(
         plugin_id: &str,
         plugin_dir: &Path,
         os_key: &str,
         selections: &Map<String, Value>,
         user_state: &Value,
-    ) -> Result<Option<Value>, String> {
+    ) -> Result<Vec<(String, Value)>, String> {
         let manifest = Self::read_json(&plugin_dir.join("manifest.json"))?;
         let connect = Self::read_json(&plugin_dir.join("connect.json"))?;
 
         let Some(platform_connect) = Self::platform_connect(&connect, os_key) else {
-            return Ok(None);
+            return Ok(Vec::new());
         };
 
-        let category = manifest
-            .get("category")
-            .and_then(|v| v.as_str())
-            .unwrap_or("");
+        let categories = Self::category_list(&manifest);
+        if categories.is_empty() {
+            return Ok(Vec::new());
+        }
         let protocols = manifest
             .get("protocols")
             .and_then(|v| v.as_array())
@@ -414,66 +460,83 @@ impl PluginService {
             .or_else(|| manifest.get("display_name").and_then(|v| v.as_str()))
             .unwrap_or(plugin_id);
 
-        let launch = platform_connect.get("launch").unwrap_or(&Value::Null);
-        let (mut arg_format, autoit) = Self::launch_to_arg_format(launch);
-        // 命令桥接的 profile 名只在 connect.json 里写一次，展示用的 arg_format 里替换掉占位符。
-        if let Some(profile_name) = platform_connect
-            .get("bridge")
-            .and_then(|b| b.get("profile_name"))
-            .and_then(|v| v.as_str())
-        {
-            arg_format = arg_format.replace("{bridge_profile}", profile_name);
-        }
-
-        let (path, mut is_set, is_internal) =
+        let (path, base_is_set, is_internal) =
             Self::resolve_path(plugin_id, &platform_connect, user_state);
 
         let executable_type = Self::executable_type(&platform_connect);
         let path_exists = Self::user_path_exists(&platform_connect, &path);
-
-        let match_first = Self::build_match_first(plugin_id, category, &protocols, selections);
-        if !match_first.is_empty() {
-            is_set = true;
-        }
 
         let is_default = platform_connect
             .get("is_default")
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
 
-        let mut item = json!({
-            "name": manifest.get("name").and_then(|v| v.as_str()).unwrap_or(""),
-            "display_name": display_name,
-            "protocol": protocols,
-            "comment": manifest.get("comment").cloned().unwrap_or(json!({})),
-            "download_url": manifest.get("download_url").and_then(|v| v.as_str()).unwrap_or(""),
-            "type": category,
-            "path": path,
-            "arg_format": arg_format,
-            "match_first": match_first,
-            "is_internal": is_internal,
-            "is_default": is_default,
-            "is_set": is_set,
-            "executable_type": executable_type,
-            "path_exists": path_exists,
-            "_plugin_id": plugin_id,
-        });
+        let mut items = Vec::with_capacity(categories.len());
+        let multi_category = categories.len() > 1;
+        for category in categories {
+            // 多分类时 launch_by_category 是必需的：缺了就说明打包者没想清楚这个分类
+            // 该怎么启动，宁可让这个分类不注册，也不要用另一套参数蒙过去。
+            let Some(launch) =
+                Self::launch_for_category(&platform_connect, &category, multi_category)
+            else {
+                log::error!(
+                    "Multi-category plugin {} is missing launch_by_category for '{}', not registering it",
+                    plugin_id,
+                    category
+                );
+                continue;
+            };
+            let (mut arg_format, autoit) = Self::launch_to_arg_format(launch);
+            // 命令桥接的 profile 名只在 connect.json 里写一次，展示用的 arg_format 里替换掉占位符。
+            if let Some(profile_name) = platform_connect
+                .get("bridge")
+                .and_then(|b| b.get("profile_name"))
+                .and_then(|v| v.as_str())
+            {
+                arg_format = arg_format.replace("{bridge_profile}", profile_name);
+            }
 
-        if let Some(steps) = autoit {
-            item.as_object_mut()
-                .unwrap()
-                .insert("autoit".to_string(), steps);
+            let match_first =
+                Self::build_match_first(plugin_id, &category, &protocols, selections);
+            // 每个分类的“已启用”状态独立：SSH 页启用了不代表 SFTP 页也启用。
+            let is_set = base_is_set || !match_first.is_empty();
+
+            let mut item = json!({
+                "name": manifest.get("name").and_then(|v| v.as_str()).unwrap_or(""),
+                "display_name": display_name,
+                "protocol": protocols,
+                "comment": manifest.get("comment").cloned().unwrap_or(json!({})),
+                "download_url": manifest.get("download_url").and_then(|v| v.as_str()).unwrap_or(""),
+                "type": category,
+                "path": path,
+                "arg_format": arg_format,
+                "match_first": match_first,
+                "is_internal": is_internal,
+                "is_default": is_default,
+                "is_set": is_set,
+                "executable_type": executable_type,
+                "path_exists": path_exists,
+                "_plugin_id": plugin_id,
+            });
+
+            if let Some(steps) = autoit.clone() {
+                item.as_object_mut()
+                    .unwrap()
+                    .insert("autoit".to_string(), steps);
+            }
+
+            // bridge 原样透传：go-client 拉起客户端时会按它把本次连接写成一个桥接脚本，
+            // 让终端跑固定的本地 profile 去 exec 内置 client，从而免框、免系统凭据地自动登录。
+            if let Some(bridge) = platform_connect.get("bridge") {
+                item.as_object_mut()
+                    .unwrap()
+                    .insert("bridge".to_string(), bridge.clone());
+            }
+
+            items.push((category, item));
         }
 
-        // bridge 原样透传：go-client 拉起客户端时会按它把本次连接写成一个桥接脚本，
-        // 让终端跑固定的本地 profile 去 exec 内置 client，从而免框、免系统凭据地自动登录。
-        if let Some(bridge) = platform_connect.get("bridge") {
-            item.as_object_mut()
-                .unwrap()
-                .insert("bridge".to_string(), bridge.clone());
-        }
-
-        Ok(Some(item))
+        Ok(items)
     }
 
     fn load_user_state(app: &AppHandle, config_dir: &Path) -> Value {
@@ -531,7 +594,6 @@ impl PluginService {
                 .get("id")
                 .and_then(|v| v.as_str())
                 .ok_or_else(|| "plugin entry missing id".to_string())?;
-            let category = entry.get("category").and_then(|v| v.as_str()).unwrap_or("");
 
             let plugin_dir = builtin_dir.join(plugin_id);
             if !plugin_dir.is_dir() {
@@ -539,10 +601,10 @@ impl PluginService {
                 continue;
             }
 
-            if let Some(item) =
-                Self::plugin_to_app_item(plugin_id, &plugin_dir, os_key, &selections, &user_state)?
+            for (category, item) in
+                Self::plugin_to_app_items(plugin_id, &plugin_dir, os_key, &selections, &user_state)?
             {
-                if let Some(list) = per_category.get_mut(category) {
+                if let Some(list) = per_category.get_mut(category.as_str()) {
                     list.push(item);
                 }
             }
@@ -579,8 +641,8 @@ impl PluginService {
         index.get("plugins")?.as_array()?.iter().find_map(|entry| {
             let id = entry.get("id")?.as_str()?;
             let entry_name = entry.get("name")?.as_str()?;
-            let entry_category = entry.get("category")?.as_str()?;
-            if entry_name == name && entry_category == category {
+            // category 可以是字符串或数组：只要该插件服务这个分类就算匹配。
+            if entry_name == name && Self::category_list(entry).iter().any(|c| c == category) {
                 Some(id.to_string())
             } else {
                 None
@@ -675,5 +737,95 @@ impl PluginService {
             .map_err(|e| format!("write plugins-state.json failed: {}", e))?;
 
         Self::build_app_config(app, config_dir)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn category_list_accepts_string_and_array() {
+        let single = json!({ "category": "terminal" });
+        assert_eq!(PluginService::category_list(&single), vec!["terminal"]);
+
+        let dual = json!({ "category": ["terminal", "filetransfer"] });
+        assert_eq!(
+            PluginService::category_list(&dual),
+            vec!["terminal", "filetransfer"]
+        );
+
+        assert!(PluginService::category_list(&json!({})).is_empty());
+        assert!(PluginService::category_list(&json!({ "category": "" })).is_empty());
+    }
+
+    #[test]
+    fn multi_category_plugin_requires_launch_by_category() {
+        let connect = json!({
+            "launch": { "type": "args", "template": "-so {host}" },
+            "launch_by_category": {
+                "terminal": { "type": "args", "template": "{host}" }
+            }
+        });
+
+        // 多分类：写了覆盖的分类用覆盖
+        assert_eq!(
+            PluginService::launch_for_category(&connect, "terminal", true)
+                .and_then(|v| v.get("template"))
+                .and_then(|v| v.as_str()),
+            Some("{host}")
+        );
+        // 多分类：没写覆盖的分类不回退到 launch，直接判为配置错误
+        assert!(
+            PluginService::launch_for_category(&connect, "filetransfer", true).is_none(),
+            "多分类插件缺覆盖时必须报配置错误，不能回退用 launch 的参数"
+        );
+
+        // 单分类：仍直接用 launch
+        assert_eq!(
+            PluginService::launch_for_category(&connect, "filetransfer", false)
+                .and_then(|v| v.get("template"))
+                .and_then(|v| v.as_str()),
+            Some("-so {host}")
+        );
+    }
+
+    #[test]
+    fn find_plugin_id_by_name_matches_multi_category_plugin() {
+        let dir = std::env::temp_dir().join(format!("jms-plugin-idx-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(
+            dir.join("index.json"),
+            r#"{
+              "plugins": [
+                { "id": "macos.electerm", "name": "electerm",
+                  "category": ["terminal", "filetransfer"] },
+                { "id": "macos.tabby", "name": "tabby", "category": "terminal" }
+              ]
+            }"#,
+        )
+        .unwrap();
+
+        // 多分类插件在两个分类下都能被“启用”按钮找到
+        assert_eq!(
+            PluginService::find_plugin_id_by_name(&dir, "electerm", "terminal"),
+            Some("macos.electerm".to_string())
+        );
+        assert_eq!(
+            PluginService::find_plugin_id_by_name(&dir, "electerm", "filetransfer"),
+            Some("macos.electerm".to_string())
+        );
+        // 单分类插件行为不变
+        assert_eq!(
+            PluginService::find_plugin_id_by_name(&dir, "tabby", "terminal"),
+            Some("macos.tabby".to_string())
+        );
+        assert_eq!(
+            PluginService::find_plugin_id_by_name(&dir, "tabby", "filetransfer"),
+            None
+        );
+
+        let _ = fs::remove_dir_all(&dir);
     }
 }

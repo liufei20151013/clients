@@ -48,8 +48,22 @@
       "type": "string"
     },
     "category": {
-      "type": "string",
-      "enum": ["terminal", "remotedesktop", "filetransfer", "databases"]
+      "description": "Which settings page(s) the plugin shows up on. A plugin may serve several categories at once (e.g. an SSH terminal that is also an SFTP client); use launch_by_category to give each category its own argv.",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": ["terminal", "remotedesktop", "filetransfer", "databases"]
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["terminal", "remotedesktop", "filetransfer", "databases"]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      ]
     },
     "protocols": {
       "type": "array",

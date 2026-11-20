@@ -139,7 +139,7 @@ my-terminal-plugin/
 | `display_name` | ✓ | UI 展示名 |
 | `version` | ✓ | 语义化版本 |
 | `min_client_version` | ✓ | 最低客户端版本 |
-| `category` | ✓ | `terminal` \| `remotedesktop` \| `filetransfer` \| `databases` |
+| `category` | ✓ | `terminal` \| `remotedesktop` \| `filetransfer` \| `databases`，也可以是数组表示一个插件同时服务多个分类（见下） |
 | `protocols` | ✓ | 支持的协议列表 |
 | `builtin` | | `true` 表示内置，不可卸载 |
 
@@ -170,6 +170,37 @@ my-terminal-plugin/
 | `{dbname}` | 数据库名 |
 | `{use_ssl}` | 是否 SSL |
 | `{allow_invalid_cert}` | 是否允许无效证书 |
+
+### 多分类插件（`category` 为数组）
+
+一个应用可以同时充当终端与文件传输工具（如 Electerm 既能开 SSH 又是 SFTP 客户端）。
+把 `manifest.json` 的 `category` 写成数组（如 `["terminal", "filetransfer"]`），
+插件就会在每个分类的设置页各出现一次，两处共用同一份安装路径与启用开关；
+`protocols` 要同时列出两个分类下用到的协议（如 `["ssh", "sftp"]`）。
+
+**此时 `connect.json` 必须提供 `launch_by_category`**，为每个分类各写一份 `launch`：
+同一款应用在不同分类下几乎总要带不同参数，共用一份 `launch` 基本等于配错。
+以 Electerm 为例，`-so` 表示只开 SFTP 面板，当 SSH 终端用时不能带它：
+
+```json
+"launch": {
+  "type": "args",
+  "template": "-l {username} -P {port} -pw {value} -t {name} -so -opts {\"startDirectoryRemote\":\"/\"} {host}"
+},
+"launch_by_category": {
+  "terminal": {
+    "type": "args",
+    "template": "-l {username} -P {port} -pw {value} -t {name} {host}"
+  }
+}
+```
+
+- 顶层 `launch` 仍是必填（单分类插件就用它）。**多分类插件必须在 `launch_by_category` 里把每个分类都写全**，
+  少一个分类，该分类就**不会**被注册（设置页里看不到这个插件，并记一条 error 日志）——
+  不会悄悄回退用 `launch` 的参数，因为那等于这个分类必然连错，只是错得更难查。
+- 每个分类的启用状态相互独立：`selections` 的 key 是 `category:protocol`，
+  所以「SSH 用 Electerm、SFTP 用 FileZilla」是可以同时成立的。
+- 拉起时按当前协议所属分类取参数，因此内置 `client` 与各 GUI 客户端走的是同一套取值逻辑。
 
 示例见 `plugins/demo/hello-terminal/connect.json`。
 
