@@ -52,7 +52,9 @@ func getLogWriter() zapcore.WriteSyncer {
 		return zapcore.AddSync(os.Stdout)
 	}
 	filePath := filepath.Join(logDir, "client.log")
-	file, err := os.Create(filePath)
+	// 追加写入：每次拉起客户端都会新起一个进程，用 os.Create 会把上一次的日志清掉，
+	// 排查“客户端没起来/参数不对”这类问题时就完全没证据了。
+	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		// 如果创建文件失败，使用标准输出
 		return zapcore.AddSync(os.Stdout)

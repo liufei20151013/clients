@@ -33,6 +33,19 @@ type AppItem struct {
 	IsInternal  bool            `json:"is_internal"`
 	IsDefault   bool            `json:"is_default"`
 	IsSet       bool            `json:"is_set"`
+	// PasswordStore 由插件在 connect.json 里声明：拉起客户端前如何把密码预置到
+	// 客户端自己的凭据存储中。为空表示该客户端不做密码代填。
+	PasswordStore *PasswordStore `json:"password_store,omitempty"`
+}
+
+// PasswordStore 描述第三方客户端的凭据注入方式。
+// 目前仅支持 macOS 钥匙串：基于 keytar 的 Electron 客户端（Tabby 等）会用
+// service/account 两个键去读密码，命中后直接走“已保存密码”登录，不再弹框。
+// Service、Account 支持与 launch.template 相同的占位符（{host} {port} {username} ...）。
+type PasswordStore struct {
+	Type    string `json:"type"`
+	Service string `json:"service"`
+	Account string `json:"account"`
 }
 
 type AutoItCommand struct {

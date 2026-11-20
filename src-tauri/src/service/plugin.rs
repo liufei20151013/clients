@@ -457,6 +457,14 @@ impl PluginService {
                 .insert("autoit".to_string(), steps);
         }
 
+        // password_store 原样透传：客户端拉起的 go-client 会按它把密码预置到
+        // 目标应用自己的凭据存储（macOS 钥匙串），实现不弹框的密码代填。
+        if let Some(store) = platform_connect.get("password_store") {
+            item.as_object_mut()
+                .unwrap()
+                .insert("password_store".to_string(), store.clone());
+        }
+
         Ok(Some(item))
     }
 

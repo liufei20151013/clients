@@ -48,13 +48,14 @@ type manifest struct {
 }
 
 type platformConnect struct {
-	DisplayName string                 `json:"display_name"`
-	Executable  executableConfig       `json:"executable"`
-	Launch      map[string]interface{} `json:"launch"`
-	MatchFirst  []string               `json:"match_first"`
-	IsDefault   bool                   `json:"is_default"`
-	IsSet       bool                   `json:"is_set"`
-	IsInternal  bool                   `json:"is_internal"`
+	DisplayName   string                 `json:"display_name"`
+	Executable    executableConfig       `json:"executable"`
+	Launch        map[string]interface{} `json:"launch"`
+	MatchFirst    []string               `json:"match_first"`
+	IsDefault     bool                   `json:"is_default"`
+	IsSet         bool                   `json:"is_set"`
+	IsInternal    bool                   `json:"is_internal"`
+	PasswordStore *config.PasswordStore  `json:"password_store"`
 }
 
 type executableConfig struct {
@@ -370,17 +371,18 @@ func LoadAppConfig(configDir string) (*config.AppConfig, bool) {
 		}
 
 		item := config.AppItem{
-			Name:        manifest.Name,
-			DisplayName: displayName,
-			Protocol:    manifest.Protocols,
-			Type:        manifest.Category,
-			MatchFirst:  matchFirst,
-			Path:        path,
-			ArgFormat:   argFormat,
-			AutoIt:      autoit,
-			IsInternal:  isInternal,
-			IsDefault:   platformConnect.IsDefault,
-			IsSet:       isSet,
+			Name:          manifest.Name,
+			DisplayName:   displayName,
+			Protocol:      manifest.Protocols,
+			Type:          manifest.Category,
+			MatchFirst:    matchFirst,
+			Path:          path,
+			ArgFormat:     argFormat,
+			AutoIt:        autoit,
+			IsInternal:    isInternal,
+			IsDefault:     platformConnect.IsDefault,
+			IsSet:         isSet,
+			PasswordStore: platformConnect.PasswordStore,
 		}
 
 		if list, ok := categoryItems[manifest.Category]; ok {

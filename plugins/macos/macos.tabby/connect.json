@@ -13,5 +13,10 @@
     "type": "args",
     "template": "quickConnect ssh {username}@{host}:{port}"
   },
+  "password_store": {
+    "type": "macos-keychain",
+    "service": "ssh@{host}:{port}",
+    "account": "{username}"
+  },
   "display_name": "Tabby"
 }

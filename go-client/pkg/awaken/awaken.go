@@ -29,6 +29,23 @@ type File struct {
 	Content string `json:"content"`
 }
 
+// pendingCleanups 保存拉起客户端后需要回收的临时资源（例如为了代填密码而临时
+// 写进系统凭据存储的条目）。等客户端进程退出后统一执行，避免过期凭据长期堆积。
+var pendingCleanups []func()
+
+func registerCleanup(cleanup func()) {
+	if cleanup != nil {
+		pendingCleanups = append(pendingCleanups, cleanup)
+	}
+}
+
+func runCleanups() {
+	for _, cleanup := range pendingCleanups {
+		cleanup()
+	}
+	pendingCleanups = nil
+}
+
 type Endpoint struct {
 	Host string `json:"host"`
 	Port int    `json:"port"`
@@ -229,6 +246,7 @@ func (r *Rouse) HandleSSH(appConfig *config.AppConfig) {
 		if err := cmd.Run(); err != nil {
 			reportErrorf("Failed to execute %s application: %v", strings.ToUpper(r.Protocol), err)
 		}
+		runCleanups()
 	} else {
 		reportError(missingAppError(strings.ToUpper(r.Protocol), currentTerminalApps(appConfig), r.Protocol))
 	}

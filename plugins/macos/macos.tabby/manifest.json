@@ -13,7 +13,7 @@
   ],
   "builtin": true,
   "comment": {
-    "zh": "Tabby 是一款基于 Electron 的现代终端 / SSH 客户端，支持标签页、分屏、连接管理与内置 SFTP 面板。\n\nTabby 命令行不支持传递密码，首次连接时需在 Tabby 弹窗中粘贴一次密码；SFTP 可在连上后在标签页内手动打开。\n\n!!!手动下载安装到「应用程序」，点击保存启用!!!",
-    "en": "Tabby is a modern Electron-based terminal/SSH client with tabs, split panes, a connection manager and a built-in SFTP panel.\n\nTabby's CLI does not support passing a password, so you need to paste the password once in the Tabby prompt; the SFTP panel can be opened manually inside the tab afterwards.\n\n!!!Manually download and install to /Applications, click Save to activate!!!"
+    "zh": "Tabby 是一款基于 Electron 的现代终端 / SSH 客户端，支持标签页、分屏、连接管理与内置 SFTP 面板。\n\nTabby 命令行不支持传递密码，客户端会先把本次连接的密码写入 macOS 钥匙串（服务名 ssh@主机:端口），Tabby 启动后自动取用，一般无需再手工输入。首次连接时如弹出「Tabby 想要使用钥匙串」的授权窗口，点击「始终允许」即可。SFTP 可在连上后在标签页内手动打开。\n\n!!!手动下载安装到「应用程序」，点击保存启用!!!",
+    "en": "Tabby is a modern Electron-based terminal/SSH client with tabs, split panes, a connection manager and a built-in SFTP panel.\n\nTabby's CLI cannot take a password, so the client seeds it into the macOS keychain (service ssh@host:port) and Tabby picks it up automatically on launch, so you normally do not need to type it. If macOS asks whether Tabby may use the keychain on the first connection, choose Always Allow. The SFTP panel can be opened manually inside the tab afterwards.\n\n!!!Manually download and install to /Applications, click Save to activate!!!"
   }
 }
