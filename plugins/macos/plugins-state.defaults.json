@@ -5,7 +5,6 @@
     "terminal:telnet": "macos.terminal",
     "remotedesktop:rdp": "macos.mstsc",
     "remotedesktop:vnc": "macos.tigervnc",
-    "filetransfer:sftp": "macos.iterm-sftp",
     "databases:oracle": "macos.terminal-db",
     "databases:mysql": "macos.terminal-db",
     "databases:postgresql": "macos.terminal-db",

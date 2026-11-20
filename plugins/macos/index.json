@@ -32,11 +32,6 @@
       "category": "terminal"
     },
     {
-      "id": "macos.iterm-sftp",
-      "name": "iterm",
-      "category": "filetransfer"
-    },
-    {
       "id": "macos.mongo-compass",
       "name": "mongo_compass",
       "category": "databases"
